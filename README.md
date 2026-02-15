@@ -1,4 +1,4 @@
-# TOEIC 段階的習慣トラッカー v2
+# TOEIC 段階的習慣トラッカー
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![GitHub Pages](https://img.shields.io/badge/demo-live-brightgreen)](https://[your-username].github.io/toeic-habit-tracker-v2/)
