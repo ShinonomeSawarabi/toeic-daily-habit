@@ -1,0 +1,1596 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TOEIC段階的習慣トラッカー v2</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .phone-container {
+            width: 100%;
+            max-width: 375px;
+            height: 812px;
+            background: white;
+            border-radius: 30px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .status-bar {
+            height: 44px;
+            background: #f8f9fa;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 20px;
+            font-size: 12px;
+            color: #666;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+        }
+
+        .level-badge {
+            display: inline-block;
+            background: rgba(255,255,255,0.2);
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+
+        .level-title {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+
+        .level-subtitle {
+            font-size: 13px;
+            opacity: 0.9;
+        }
+
+        .progress-section {
+            background: rgba(255,255,255,0.2);
+            border-radius: 15px;
+            padding: 15px;
+            margin-top: 15px;
+        }
+
+        .overall-progress {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .progress-text {
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        .progress-bar-outer {
+            width: 100%;
+            height: 10px;
+            background: rgba(255,255,255,0.3);
+            border-radius: 5px;
+            overflow: hidden;
+        }
+
+        .progress-bar-inner {
+            height: 100%;
+            background: white;
+            border-radius: 5px;
+            transition: width 0.3s ease;
+        }
+
+        .content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+        }
+
+        .achievements-section {
+            background: linear-gradient(135deg, #ffd89b 0%, #19547b 100%);
+            border-radius: 20px;
+            padding: 20px;
+            margin-bottom: 20px;
+            color: white;
+        }
+
+        .achievements-header {
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .crown-display {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .crown-item {
+            background: rgba(255,255,255,0.2);
+            padding: 10px 15px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+        }
+
+        .crown-icon {
+            font-size: 24px;
+        }
+
+        .crown-info {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .crown-level {
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .crown-date {
+            font-size: 10px;
+            opacity: 0.8;
+        }
+
+        .current-task {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            border-radius: 20px;
+            padding: 25px;
+            color: white;
+            margin-bottom: 20px;
+        }
+
+        .task-header {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 15px;
+            opacity: 0.9;
+        }
+
+        .task-title {
+            font-size: 22px;
+            font-weight: bold;
+            margin-bottom: 10px;
+            line-height: 1.3;
+        }
+
+        .task-meta {
+            display: flex;
+            gap: 15px;
+            font-size: 14px;
+            margin-top: 15px;
+        }
+
+        .meta-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .check-button {
+            width: 100%;
+            background: white;
+            color: #f5576c;
+            border: none;
+            padding: 15px;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 700;
+            margin-top: 15px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .check-button:active {
+            transform: scale(0.98);
+        }
+
+        .check-button.completed {
+            background: rgba(255,255,255,0.3);
+            color: white;
+        }
+
+        .history-section {
+            margin-bottom: 20px;
+        }
+
+        .section-title {
+            font-size: 18px;
+            font-weight: 700;
+            color: #333;
+            margin-bottom: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 6px;
+        }
+
+        .calendar-day {
+            aspect-ratio: 1;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 11px;
+            font-weight: 600;
+            background: #f0f0f0;
+            color: #999;
+            position: relative;
+        }
+
+        .calendar-day.completed {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .calendar-day.today {
+            border: 2px solid #667eea;
+        }
+
+        .calendar-day.missed {
+            background: #ffe0e0;
+            color: #ff6b6b;
+        }
+
+        .level-list {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 15px;
+        }
+
+        .level-item {
+            background: white;
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 10px;
+            transition: all 0.2s;
+            border: 2px solid transparent;
+            position: relative;
+        }
+
+        .level-item.current {
+            border-color: #667eea;
+            background: #f0f4ff;
+        }
+
+        .level-item.completed {
+            opacity: 0.9;
+            background: #fffef0;
+        }
+
+        .level-item-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .level-name {
+            font-weight: 700;
+            color: #333;
+            font-size: 15px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .crown-badge {
+            font-size: 20px;
+            animation: bounce 0.5s ease;
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-5px); }
+        }
+
+        .level-status {
+            font-size: 12px;
+            padding: 4px 10px;
+            border-radius: 10px;
+            font-weight: 600;
+        }
+
+        .level-status.current {
+            background: #667eea;
+            color: white;
+        }
+
+        .level-status.completed {
+            background: #ffd700;
+            color: #333;
+        }
+
+        .level-status.locked {
+            background: #e0e0e0;
+            color: #999;
+        }
+
+        .level-description {
+            font-size: 13px;
+            color: #666;
+            line-height: 1.4;
+        }
+
+        .level-actions {
+            display: flex;
+            gap: 8px;
+            margin-top: 12px;
+        }
+
+        .level-action-btn {
+            flex: 1;
+            padding: 8px 12px;
+            border: none;
+            border-radius: 8px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .level-action-btn.edit {
+            background: #667eea;
+            color: white;
+        }
+
+        .level-action-btn.reset {
+            background: #ff6b6b;
+            color: white;
+        }
+
+        .level-action-btn:active {
+            transform: scale(0.95);
+        }
+
+        .bottom-nav {
+            height: 70px;
+            background: white;
+            border-top: 1px solid #e9ecef;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            padding-bottom: 10px;
+        }
+
+        .nav-item {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            color: #999;
+            font-size: 11px;
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+
+        .nav-item.active {
+            color: #667eea;
+        }
+
+        .nav-icon {
+            font-size: 24px;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal.show {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            max-width: 320px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 20px;
+            color: #333;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 14px;
+            font-weight: 600;
+            color: #666;
+            margin-bottom: 8px;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 14px;
+            transition: border-color 0.2s;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .form-textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 14px;
+            min-height: 100px;
+            resize: vertical;
+            font-family: inherit;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-primary:active {
+            background: #5568d3;
+        }
+
+        .btn-secondary {
+            background: #e0e0e0;
+            color: #666;
+        }
+
+        .btn-secondary:active {
+            background: #d0d0d0;
+        }
+
+        .btn-danger {
+            background: #ff6b6b;
+            color: white;
+        }
+
+        .btn-danger:active {
+            background: #ff5252;
+        }
+
+        .celebration {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0);
+            background: rgba(0,0,0,0.9);
+            color: white;
+            padding: 40px;
+            border-radius: 20px;
+            font-size: 24px;
+            font-weight: bold;
+            text-align: center;
+            transition: transform 0.3s ease;
+            pointer-events: none;
+            z-index: 2000;
+            max-width: 300px;
+        }
+
+        .celebration.show {
+            transform: translate(-50%, -50%) scale(1);
+        }
+
+        .view {
+            display: none;
+        }
+
+        .view.active {
+            display: block;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .stat-card {
+            background: white;
+            border-radius: 12px;
+            padding: 15px;
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 28px;
+            font-weight: bold;
+            color: #667eea;
+            display: block;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: #666;
+            margin-top: 4px;
+        }
+
+        .reset-section {
+            background: #fff5f5;
+            border-radius: 15px;
+            padding: 20px;
+            margin-top: 20px;
+            border: 2px solid #ff6b6b;
+        }
+
+        .reset-warning {
+            font-size: 14px;
+            color: #ff6b6b;
+            margin-bottom: 15px;
+            line-height: 1.5;
+        }
+
+        .share-button {
+            width: 100%;
+            background: #1da1f2;
+            color: white;
+            border: none;
+            padding: 12px;
+            border-radius: 12px;
+            font-size: 15px;
+            font-weight: 600;
+            margin-top: 10px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .share-button:active {
+            transform: scale(0.98);
+            background: #1a91da;
+        }
+
+        .share-button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+
+        .tweet-preview {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 15px;
+            border: 1px solid #e1e8ed;
+        }
+
+        .tweet-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 12px;
+        }
+
+        .tweet-avatar {
+            width: 40px;
+            height: 40px;
+            background: #667eea;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+        }
+
+        .tweet-username {
+            font-weight: 600;
+            color: #333;
+        }
+
+        .tweet-text {
+            font-size: 15px;
+            line-height: 1.5;
+            color: #333;
+            white-space: pre-wrap;
+        }
+
+        .tweet-hashtag {
+            color: #1da1f2;
+        }
+
+        .char-counter {
+            text-align: right;
+            font-size: 12px;
+            color: #999;
+            margin-top: 8px;
+        }
+
+        .char-counter.warning {
+            color: #ff6b6b;
+        }
+    </style>
+</head>
+<body>
+    <div class="phone-container">
+        <div class="status-bar">
+            <span id="currentTime">9:41</span>
+            <span>🔋 100%</span>
+        </div>
+
+        <div class="header">
+            <div class="level-badge">🎯 <span id="headerLevel">Level 1</span></div>
+            <div class="level-title" id="headerTitle">基礎固め期</div>
+            <div class="level-subtitle" id="headerSubtitle">英単語を確実に覚えよう</div>
+            
+            <div class="progress-section">
+                <div class="overall-progress">
+                    <span class="progress-text">進捗: <span id="headerProgress">0/10日</span></span>
+                    <span class="progress-text"><span id="headerPercent">0</span>%</span>
+                </div>
+                <div class="progress-bar-outer">
+                    <div class="progress-bar-inner" id="headerProgressBar" style="width: 0%"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ホーム画面 -->
+        <div class="content view active" id="homeView">
+            <!-- 実績セクション -->
+            <div class="achievements-section" id="achievementsSection" style="display: none;">
+                <div class="achievements-header">
+                    <span>👑</span>
+                    <span>獲得した王冠</span>
+                </div>
+                <div class="crown-display" id="crownDisplay"></div>
+            </div>
+
+            <div class="current-task">
+                <div class="task-header">今日のタスク</div>
+                <div class="task-title" id="taskTitle">英単語を10個覚える</div>
+                <div class="task-meta">
+                    <div class="meta-item">
+                        <span>📅</span>
+                        <span id="taskDay">1/10日目</span>
+                    </div>
+                    <div class="meta-item">
+                        <span>🔥</span>
+                        <span id="taskStreak">連続0日</span>
+                    </div>
+                </div>
+                <button class="check-button" id="completeButton" onclick="completeTask()">
+                    ✓ 今日のタスク完了
+                </button>
+                <button class="share-button" id="shareButton" onclick="openShareModal()" disabled>
+                    🐦 Xで成果を報告する
+                </button>
+            </div>
+
+            <div class="history-section">
+                <div class="section-title">
+                    <span>📊 今月の履歴</span>
+                    <span style="font-size: 14px; color: #999;" id="monthCompleted">0/0日</span>
+                </div>
+                <div class="calendar-grid" id="calendar"></div>
+            </div>
+
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <span class="stat-number" id="totalDays">0</span>
+                    <span class="stat-label">総学習日数</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-number" id="currentStreak">0</span>
+                    <span class="stat-label">現在の連続</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-number" id="longestStreak">0</span>
+                    <span class="stat-label">最長連続</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-number" id="completionRate">0</span>
+                    <span class="stat-label">達成率(%)</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- レベル一覧画面 -->
+        <div class="content view" id="levelsView">
+            <div class="level-list" id="levelList"></div>
+        </div>
+
+        <!-- 設定画面 -->
+        <div class="content view" id="settingsView">
+            <div class="level-list">
+                <div class="section-title" style="margin-bottom: 15px;">レベル設定</div>
+                <div id="settingsLevelList"></div>
+                <button class="btn btn-primary" style="width: 100%; margin-top: 15px;" onclick="addNewLevel()">
+                    ➕ 新しいレベルを追加
+                </button>
+                <button class="btn btn-secondary" style="width: 100%; margin-top: 10px;" onclick="resetToDefault()">
+                    🔄 デフォルトに戻す
+                </button>
+            </div>
+
+            <!-- リセットセクション -->
+            <div class="reset-section">
+                <div class="section-title" style="margin-bottom: 10px; color: #ff6b6b;">⚠️ データリセット</div>
+                <div class="reset-warning">
+                    ⚠️ 警告: リセットすると元に戻せません。慎重に操作してください。
+                </div>
+                <button class="btn btn-danger" style="width: 100%; margin-bottom: 10px;" onclick="confirmResetAll()">
+                    🗑️ 全データをリセット
+                </button>
+            </div>
+        </div>
+
+        <div class="bottom-nav">
+            <div class="nav-item active" onclick="switchView('home')">
+                <div class="nav-icon">🏠</div>
+                <span>ホーム</span>
+            </div>
+            <div class="nav-item" onclick="switchView('levels')">
+                <div class="nav-icon">📈</div>
+                <span>レベル</span>
+            </div>
+            <div class="nav-item" onclick="switchView('settings')">
+                <div class="nav-icon">⚙️</div>
+                <span>設定</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- レベル編集モーダル -->
+    <div class="modal" id="editModal">
+        <div class="modal-content">
+            <div class="modal-header">レベル編集</div>
+            <div class="form-group">
+                <label class="form-label">レベル名</label>
+                <input type="text" class="form-input" id="editLevelName" placeholder="Level 1">
+            </div>
+            <div class="form-group">
+                <label class="form-label">タイトル</label>
+                <input type="text" class="form-input" id="editTitle" placeholder="基礎固め期">
+            </div>
+            <div class="form-group">
+                <label class="form-label">説明</label>
+                <input type="text" class="form-input" id="editSubtitle" placeholder="英単語を確実に覚えよう">
+            </div>
+            <div class="form-group">
+                <label class="form-label">タスク内容</label>
+                <textarea class="form-textarea" id="editTask" placeholder="英単語を10個覚える"></textarea>
+            </div>
+            <div class="form-group">
+                <label class="form-label">必要日数</label>
+                <input type="number" class="form-input" id="editDays" placeholder="10" min="1">
+            </div>
+            <div class="button-group">
+                <button class="btn btn-secondary" onclick="closeEditModal()">キャンセル</button>
+                <button class="btn btn-primary" onclick="saveLevel()">保存</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 確認モーダル -->
+    <div class="modal" id="confirmModal">
+        <div class="modal-content">
+            <div class="modal-header" id="confirmTitle">確認</div>
+            <div style="color: #666; margin-bottom: 20px; line-height: 1.5;" id="confirmMessage"></div>
+            <div class="button-group">
+                <button class="btn btn-secondary" onclick="closeConfirmModal()">キャンセル</button>
+                <button class="btn btn-danger" id="confirmButton">実行</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- X投稿モーダル -->
+    <div class="modal" id="shareModal">
+        <div class="modal-content">
+            <div class="modal-header">🐦 Xで成果を報告</div>
+            
+            <div class="tweet-preview">
+                <div class="tweet-header">
+                    <div class="tweet-avatar">📚</div>
+                    <div class="tweet-username">あなた</div>
+                </div>
+                <div class="tweet-text" id="tweetPreview"></div>
+                <div class="char-counter" id="charCounter">0 / 280</div>
+            </div>
+
+            <div style="font-size: 13px; color: #999; margin-bottom: 15px;">
+                ✓ 内容を確認してから投稿してください
+            </div>
+
+            <div class="button-group">
+                <button class="btn btn-secondary" onclick="closeShareModal()">キャンセル</button>
+                <button class="btn btn-primary" onclick="postToX()" style="background: #1da1f2;">
+                    🐦 Xに投稿
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- お祝いメッセージ -->
+    <div class="celebration" id="celebration"></div>
+
+    <script>
+        // デフォルトレベル定義
+        const DEFAULT_LEVELS = [
+            {
+                id: 1,
+                name: "Level 1",
+                title: "基礎固め期",
+                subtitle: "英単語を確実に覚えよう",
+                task: "英単語を10個覚える",
+                requiredDays: 10
+            },
+            {
+                id: 2,
+                name: "Level 2",
+                title: "文法ドリル期",
+                subtitle: "基本文法を定着させよう",
+                task: "文法ドリル5問を解く",
+                requiredDays: 10
+            },
+            {
+                id: 3,
+                name: "Level 3",
+                title: "単語力強化期",
+                subtitle: "語彙を一気に増やそう",
+                task: "英単語を30個覚える",
+                requiredDays: 14
+            },
+            {
+                id: 4,
+                name: "Level 4",
+                title: "でる1000 開始期",
+                subtitle: "本格的な問題演習スタート",
+                task: "でる1000を50問解く",
+                requiredDays: 4
+            },
+            {
+                id: 5,
+                name: "Level 5",
+                title: "でる1000 継続期",
+                subtitle: "4日解いて1日復習のサイクル",
+                task: "でる1000を50問解く（4日） → 総復習（1日）",
+                requiredDays: 20
+            },
+            {
+                id: 6,
+                name: "Level 6",
+                title: "Part 7 強化期",
+                subtitle: "長文読解力を鍛えよう",
+                task: "Part 7を10問解く",
+                requiredDays: 15
+            },
+            {
+                id: 7,
+                name: "Level 7",
+                title: "総合演習期",
+                subtitle: "全パートをバランスよく",
+                task: "模試1セット（200問）を時間内に解く",
+                requiredDays: 7
+            },
+            {
+                id: 8,
+                name: "Level 8",
+                title: "弱点克服期",
+                subtitle: "苦手パートを集中攻略",
+                task: "苦手パートを50問解く + 復習",
+                requiredDays: 10
+            }
+        ];
+
+        let appData = {
+            currentLevel: 1,
+            levels: [],
+            history: {},
+            achievements: [], // 王冠の記録
+            stats: {
+                totalDays: 0,
+                currentStreak: 0,
+                longestStreak: 0
+            }
+        };
+
+        let editingLevelId = null;
+        let confirmCallback = null;
+
+        // 初期化
+        function init() {
+            loadData();
+            updateTime();
+            setInterval(updateTime, 60000);
+            updateAllUI();
+        }
+
+        // 時刻更新
+        function updateTime() {
+            const now = new Date();
+            const hours = String(now.getHours()).padStart(2, '0');
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+            document.getElementById('currentTime').textContent = `${hours}:${minutes}`;
+        }
+
+        // データ読み込み
+        function loadData() {
+            const saved = localStorage.getItem('toeicProgressTracker');
+            if (saved) {
+                appData = JSON.parse(saved);
+                if (!appData.levels || appData.levels.length === 0) {
+                    appData.levels = JSON.parse(JSON.stringify(DEFAULT_LEVELS));
+                }
+                if (!appData.achievements) {
+                    appData.achievements = [];
+                }
+            } else {
+                appData.levels = JSON.parse(JSON.stringify(DEFAULT_LEVELS));
+                appData.achievements = [];
+            }
+        }
+
+        // データ保存
+        function saveData() {
+            localStorage.setItem('toeicProgressTracker', JSON.stringify(appData));
+        }
+
+        // 今日の日付
+        function getToday() {
+            return new Date().toISOString().split('T')[0];
+        }
+
+        // 現在のレベル情報取得
+        function getCurrentLevel() {
+            return appData.levels.find(l => l.id === appData.currentLevel) || appData.levels[0];
+        }
+
+        // レベルの進捗取得
+        function getLevelProgress(levelId) {
+            const completed = Object.keys(appData.history).filter(date => {
+                return appData.history[date].levelId === levelId && appData.history[date].completed;
+            }).length;
+            return completed;
+        }
+
+        // レベルが完了済みか確認
+        function isLevelCompleted(levelId) {
+            return appData.achievements.some(a => a.levelId === levelId);
+        }
+
+        // タスク完了
+        function completeTask() {
+            const today = getToday();
+            const currentLevel = getCurrentLevel();
+            
+            if (appData.history[today] && appData.history[today].completed) {
+                // すでに完了している場合は取り消し
+                delete appData.history[today];
+            } else {
+                // 完了記録
+                appData.history[today] = {
+                    levelId: appData.currentLevel,
+                    completed: true,
+                    task: currentLevel.task
+                };
+                
+                // レベル進捗チェック
+                const progress = getLevelProgress(appData.currentLevel);
+                if (progress >= currentLevel.requiredDays) {
+                    // レベルアップ
+                    levelUp();
+                } else {
+                    showCelebration('✓ 完了！\n' + (currentLevel.requiredDays - progress) + '日でレベルアップ！');
+                }
+            }
+            
+            updateStats();
+            saveData();
+            updateAllUI();
+        }
+
+        // レベルアップ
+        function levelUp() {
+            const currentLevel = getCurrentLevel();
+            
+            // 王冠を獲得
+            if (!isLevelCompleted(appData.currentLevel)) {
+                appData.achievements.push({
+                    levelId: appData.currentLevel,
+                    levelName: currentLevel.name,
+                    levelTitle: currentLevel.title,
+                    completedDate: getToday(),
+                    completedAt: new Date().toISOString()
+                });
+            }
+            
+            const nextLevel = appData.levels.find(l => l.id === appData.currentLevel + 1);
+            
+            if (nextLevel) {
+                appData.currentLevel = nextLevel.id;
+                showCelebration('👑 レベルアップ！\n' + currentLevel.name + ' クリア！\n\n次は ' + nextLevel.name + '\n' + nextLevel.title);
+            } else {
+                showCelebration('🏆 全レベル完了！\n👑 ' + appData.achievements.length + '個の王冠獲得！\nおめでとうございます！');
+            }
+        }
+
+        // 統計更新
+        function updateStats() {
+            const dates = Object.keys(appData.history).filter(d => appData.history[d].completed).sort();
+            appData.stats.totalDays = dates.length;
+
+            // 現在の連続日数
+            let streak = 0;
+            let checkDate = new Date();
+            while (true) {
+                const dateStr = checkDate.toISOString().split('T')[0];
+                if (appData.history[dateStr] && appData.history[dateStr].completed) {
+                    streak++;
+                    checkDate.setDate(checkDate.getDate() - 1);
+                } else {
+                    break;
+                }
+            }
+            appData.stats.currentStreak = streak;
+
+            // 最長連続
+            let maxStreak = 0;
+            let tempStreak = 0;
+            let prevDate = null;
+            
+            for (const dateStr of dates) {
+                const currentDate = new Date(dateStr);
+                if (prevDate) {
+                    const dayDiff = Math.floor((currentDate - prevDate) / (1000 * 60 * 60 * 24));
+                    if (dayDiff === 1) {
+                        tempStreak++;
+                    } else {
+                        maxStreak = Math.max(maxStreak, tempStreak);
+                        tempStreak = 1;
+                    }
+                } else {
+                    tempStreak = 1;
+                }
+                prevDate = currentDate;
+            }
+            maxStreak = Math.max(maxStreak, tempStreak);
+            appData.stats.longestStreak = maxStreak;
+        }
+
+        // UI全体更新
+        function updateAllUI() {
+            updateHeader();
+            updateCurrentTask();
+            updateCalendar();
+            updateStatsDisplay();
+            updateAchievements();
+            updateLevelList();
+            updateSettingsList();
+        }
+
+        // ヘッダー更新
+        function updateHeader() {
+            const level = getCurrentLevel();
+            const progress = getLevelProgress(appData.currentLevel);
+            const percent = Math.floor((progress / level.requiredDays) * 100);
+            
+            document.getElementById('headerLevel').textContent = level.name;
+            document.getElementById('headerTitle').textContent = level.title;
+            document.getElementById('headerSubtitle').textContent = level.subtitle;
+            document.getElementById('headerProgress').textContent = progress + '/' + level.requiredDays + '日';
+            document.getElementById('headerPercent').textContent = percent;
+            document.getElementById('headerProgressBar').style.width = percent + '%';
+        }
+
+        // 現在のタスク更新
+        function updateCurrentTask() {
+            const level = getCurrentLevel();
+            const progress = getLevelProgress(appData.currentLevel);
+            const today = getToday();
+            const isCompleted = appData.history[today] && appData.history[today].completed;
+            
+            document.getElementById('taskTitle').textContent = level.task;
+            document.getElementById('taskDay').textContent = (progress + 1) + '/' + level.requiredDays + '日目';
+            document.getElementById('taskStreak').textContent = '連続' + appData.stats.currentStreak + '日';
+            
+            const button = document.getElementById('completeButton');
+            const shareButton = document.getElementById('shareButton');
+            
+            if (isCompleted) {
+                button.textContent = '✓ 完了済み';
+                button.classList.add('completed');
+                shareButton.disabled = false;
+            } else {
+                button.textContent = '✓ 今日のタスク完了';
+                button.classList.remove('completed');
+                shareButton.disabled = true;
+            }
+        }
+
+        // X投稿用のテキスト生成
+        function generateTweetText() {
+            const today = new Date();
+            const dateStr = `${today.getFullYear()}年${today.getMonth() + 1}月${today.getDate()}日`;
+            const level = getCurrentLevel();
+            const progress = getLevelProgress(appData.currentLevel);
+            const remaining = level.requiredDays - progress;
+            
+            let text = `📚 TOEIC学習記録\n`;
+            text += `${dateStr}\n\n`;
+            text += `${level.name}: ${level.title}\n`;
+            text += `${progress}日目完了！\n`;
+            
+            if (remaining > 0) {
+                text += `あと${remaining}日でレベルアップ 🎯\n`;
+            } else {
+                text += `レベル完了！👑\n`;
+            }
+            
+            text += `\n#TOEIC習慣トラッカー #TOEIC学習 #継続は力なり`;
+            
+            return text;
+        }
+
+        // X投稿モーダルを開く
+        function openShareModal() {
+            const tweetText = generateTweetText();
+            document.getElementById('tweetPreview').textContent = tweetText;
+            
+            // 文字数カウント
+            const charCount = tweetText.length;
+            const counter = document.getElementById('charCounter');
+            counter.textContent = `${charCount} / 280`;
+            
+            if (charCount > 280) {
+                counter.classList.add('warning');
+            } else {
+                counter.classList.remove('warning');
+            }
+            
+            document.getElementById('shareModal').classList.add('show');
+        }
+
+        // X投稿モーダルを閉じる
+        function closeShareModal() {
+            document.getElementById('shareModal').classList.remove('show');
+        }
+
+        // Xに投稿
+        function postToX() {
+            const tweetText = generateTweetText();
+            const tweetUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(tweetText)}`;
+            
+            // 新しいウィンドウで開く
+            window.open(tweetUrl, '_blank', 'width=550,height=420');
+            
+            closeShareModal();
+            showCelebration('🐦 Xの投稿画面を開きました！');
+        }
+
+        // 王冠表示更新
+        function updateAchievements() {
+            const container = document.getElementById('crownDisplay');
+            const section = document.getElementById('achievementsSection');
+            
+            if (appData.achievements.length === 0) {
+                section.style.display = 'none';
+                return;
+            }
+            
+            section.style.display = 'block';
+            container.innerHTML = '';
+            
+            // 完了日時でソート（新しい順）
+            const sorted = [...appData.achievements].sort((a, b) => 
+                new Date(b.completedAt) - new Date(a.completedAt)
+            );
+            
+            sorted.forEach(achievement => {
+                const date = new Date(achievement.completedDate);
+                const dateStr = `${date.getMonth() + 1}/${date.getDate()}`;
+                
+                const item = document.createElement('div');
+                item.className = 'crown-item';
+                item.innerHTML = `
+                    <div class="crown-icon">👑</div>
+                    <div class="crown-info">
+                        <div class="crown-level">${achievement.levelName}</div>
+                        <div class="crown-date">${dateStr} クリア</div>
+                    </div>
+                `;
+                container.appendChild(item);
+            });
+        }
+
+        // カレンダー更新
+        function updateCalendar() {
+            const calendar = document.getElementById('calendar');
+            calendar.innerHTML = '';
+            
+            const now = new Date();
+            const year = now.getFullYear();
+            const month = now.getMonth();
+            const firstDay = new Date(year, month, 1);
+            const lastDay = new Date(year, month + 1, 0);
+            const today = getToday();
+            
+            let completed = 0;
+            let total = 0;
+            
+            for (let d = new Date(firstDay); d <= lastDay; d.setDate(d.getDate() + 1)) {
+                const dateStr = d.toISOString().split('T')[0];
+                const day = document.createElement('div');
+                day.className = 'calendar-day';
+                day.textContent = d.getDate();
+                
+                if (dateStr <= today) {
+                    total++;
+                    if (appData.history[dateStr] && appData.history[dateStr].completed) {
+                        day.classList.add('completed');
+                        completed++;
+                    } else if (dateStr < today) {
+                        day.classList.add('missed');
+                    }
+                }
+                
+                if (dateStr === today) {
+                    day.classList.add('today');
+                }
+                
+                calendar.appendChild(day);
+            }
+            
+            document.getElementById('monthCompleted').textContent = completed + '/' + total + '日';
+        }
+
+        // 統計更新
+        function updateStatsDisplay() {
+            document.getElementById('totalDays').textContent = appData.stats.totalDays;
+            document.getElementById('currentStreak').textContent = appData.stats.currentStreak;
+            document.getElementById('longestStreak').textContent = appData.stats.longestStreak;
+            
+            const now = new Date();
+            const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+            const daysInMonth = now.getDate();
+            const completedThisMonth = Object.keys(appData.history).filter(date => {
+                const d = new Date(date);
+                return d >= startOfMonth && d <= now && appData.history[date].completed;
+            }).length;
+            
+            const rate = daysInMonth > 0 ? Math.floor((completedThisMonth / daysInMonth) * 100) : 0;
+            document.getElementById('completionRate').textContent = rate;
+        }
+
+        // レベル一覧更新
+        function updateLevelList() {
+            const list = document.getElementById('levelList');
+            list.innerHTML = '';
+            
+            appData.levels.forEach(level => {
+                const progress = getLevelProgress(level.id);
+                const completed = isLevelCompleted(level.id);
+                const item = document.createElement('div');
+                item.className = 'level-item';
+                
+                let statusClass = 'locked';
+                let statusText = 'ロック';
+                
+                if (level.id === appData.currentLevel) {
+                    statusClass = 'current';
+                    statusText = '進行中';
+                    item.classList.add('current');
+                } else if (completed) {
+                    statusClass = 'completed';
+                    statusText = '完了';
+                    item.classList.add('completed');
+                }
+                
+                const crownBadge = completed ? '<span class="crown-badge">👑</span>' : '';
+                
+                item.innerHTML = `
+                    <div class="level-item-header">
+                        <div class="level-name">
+                            ${crownBadge}
+                            <span>${level.name}: ${level.title}</span>
+                        </div>
+                        <div class="level-status ${statusClass}">${statusText}</div>
+                    </div>
+                    <div class="level-description">${level.task}</div>
+                    <div class="level-description" style="margin-top: 8px; color: #999;">
+                        ${level.id <= appData.currentLevel || completed ? progress + '/' + level.requiredDays + '日完了' : '必要: ' + level.requiredDays + '日'}
+                    </div>
+                `;
+                
+                list.appendChild(item);
+            });
+        }
+
+        // 設定一覧更新
+        function updateSettingsList() {
+            const list = document.getElementById('settingsLevelList');
+            list.innerHTML = '';
+            
+            appData.levels.forEach(level => {
+                const completed = isLevelCompleted(level.id);
+                const item = document.createElement('div');
+                item.className = 'level-item';
+                
+                const crownBadge = completed ? '<span class="crown-badge">👑</span>' : '';
+                
+                item.innerHTML = `
+                    <div class="level-item-header">
+                        <div class="level-name">
+                            ${crownBadge}
+                            <span>${level.name}: ${level.title}</span>
+                        </div>
+                    </div>
+                    <div class="level-description">${level.task}</div>
+                    <div class="level-description" style="margin-top: 8px; color: #999;">
+                        必要日数: ${level.requiredDays}日
+                    </div>
+                    <div class="level-actions">
+                        <button class="level-action-btn edit" onclick="editLevel(${level.id})">✏️ 編集</button>
+                        <button class="level-action-btn reset" onclick="confirmResetLevel(${level.id})">🔄 リセット</button>
+                    </div>
+                `;
+                
+                list.appendChild(item);
+            });
+        }
+
+        // レベル編集
+        function editLevel(levelId) {
+            const level = appData.levels.find(l => l.id === levelId);
+            if (!level) return;
+            
+            editingLevelId = levelId;
+            document.getElementById('editLevelName').value = level.name;
+            document.getElementById('editTitle').value = level.title;
+            document.getElementById('editSubtitle').value = level.subtitle;
+            document.getElementById('editTask').value = level.task;
+            document.getElementById('editDays').value = level.requiredDays;
+            
+            document.getElementById('editModal').classList.add('show');
+        }
+
+        // 新規レベル追加
+        function addNewLevel() {
+            const newId = Math.max(...appData.levels.map(l => l.id)) + 1;
+            editingLevelId = null;
+            
+            document.getElementById('editLevelName').value = 'Level ' + newId;
+            document.getElementById('editTitle').value = '';
+            document.getElementById('editSubtitle').value = '';
+            document.getElementById('editTask').value = '';
+            document.getElementById('editDays').value = '10';
+            
+            document.getElementById('editModal').classList.add('show');
+        }
+
+        // レベル保存
+        function saveLevel() {
+            const name = document.getElementById('editLevelName').value;
+            const title = document.getElementById('editTitle').value;
+            const subtitle = document.getElementById('editSubtitle').value;
+            const task = document.getElementById('editTask').value;
+            const days = parseInt(document.getElementById('editDays').value);
+            
+            if (!name || !title || !task || !days) {
+                alert('すべての項目を入力してください');
+                return;
+            }
+            
+            if (editingLevelId) {
+                // 編集
+                const level = appData.levels.find(l => l.id === editingLevelId);
+                level.name = name;
+                level.title = title;
+                level.subtitle = subtitle;
+                level.task = task;
+                level.requiredDays = days;
+            } else {
+                // 新規追加
+                const newId = appData.levels.length > 0 ? Math.max(...appData.levels.map(l => l.id)) + 1 : 1;
+                appData.levels.push({
+                    id: newId,
+                    name: name,
+                    title: title,
+                    subtitle: subtitle,
+                    task: task,
+                    requiredDays: days
+                });
+            }
+            
+            saveData();
+            updateAllUI();
+            closeEditModal();
+        }
+
+        // モーダルを閉じる
+        function closeEditModal() {
+            document.getElementById('editModal').classList.remove('show');
+        }
+
+        function closeConfirmModal() {
+            document.getElementById('confirmModal').classList.remove('show');
+            confirmCallback = null;
+        }
+
+        // 確認ダイアログ表示
+        function showConfirm(title, message, callback) {
+            document.getElementById('confirmTitle').textContent = title;
+            document.getElementById('confirmMessage').textContent = message;
+            confirmCallback = callback;
+            
+            document.getElementById('confirmButton').onclick = () => {
+                if (confirmCallback) confirmCallback();
+                closeConfirmModal();
+            };
+            
+            document.getElementById('confirmModal').classList.add('show');
+        }
+
+        // レベルリセット確認
+        function confirmResetLevel(levelId) {
+            const level = appData.levels.find(l => l.id === levelId);
+            showConfirm(
+                'レベルリセット',
+                `${level.name}の進捗データをリセットしますか？\n\n・学習履歴が削除されます\n・獲得した王冠が削除されます\n\nこの操作は取り消せません。`,
+                () => resetLevel(levelId)
+            );
+        }
+
+        // レベルリセット実行
+        function resetLevel(levelId) {
+            // 該当レベルの履歴を削除
+            Object.keys(appData.history).forEach(date => {
+                if (appData.history[date].levelId === levelId) {
+                    delete appData.history[date];
+                }
+            });
+            
+            // 王冠を削除
+            appData.achievements = appData.achievements.filter(a => a.levelId !== levelId);
+            
+            // 現在のレベルがリセットされた場合
+            if (appData.currentLevel === levelId) {
+                // 一つ前のレベルに戻す（最初のレベルの場合はそのまま）
+                const prevLevel = appData.levels.find(l => l.id === levelId - 1);
+                if (prevLevel) {
+                    appData.currentLevel = prevLevel.id;
+                }
+            }
+            
+            updateStats();
+            saveData();
+            updateAllUI();
+            showCelebration('🔄 リセット完了\nレベルデータが削除されました');
+        }
+
+        // 全データリセット確認
+        function confirmResetAll() {
+            showConfirm(
+                '全データリセット',
+                '⚠️ すべてのデータをリセットしますか？\n\n削除されるもの：\n・全レベルの進捗\n・学習履歴\n・獲得した王冠\n・統計データ\n\nレベル設定は保持されます。\n\nこの操作は取り消せません。',
+                resetAll
+            );
+        }
+
+        // 全データリセット実行
+        function resetAll() {
+            appData.currentLevel = 1;
+            appData.history = {};
+            appData.achievements = [];
+            appData.stats = {
+                totalDays: 0,
+                currentStreak: 0,
+                longestStreak: 0
+            };
+            
+            saveData();
+            updateAllUI();
+            showCelebration('🔄 全データリセット完了\n新しいスタートです！');
+        }
+
+        // デフォルトに戻す
+        function resetToDefault() {
+            if (confirm('すべてのレベル設定をデフォルトに戻しますか？\n（進捗データは保持されます）')) {
+                appData.levels = JSON.parse(JSON.stringify(DEFAULT_LEVELS));
+                saveData();
+                updateAllUI();
+            }
+        }
+
+        // ビュー切り替え
+        function switchView(viewName) {
+            document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+            
+            document.getElementById(viewName + 'View').classList.add('active');
+            event.currentTarget.classList.add('active');
+        }
+
+        // お祝い表示
+        function showCelebration(message) {
+            const celebration = document.getElementById('celebration');
+            celebration.innerHTML = message.replace(/\n/g, '<br>');
+            celebration.classList.add('show');
+            
+            setTimeout(() => {
+                celebration.classList.remove('show');
+            }, 2500);
+        }
+
+        // ページ読み込み時
+        window.onload = init;
+    </script>
+</body>
+</html>
