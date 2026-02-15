@@ -56,10 +56,7 @@ TOEIC学習を段階的にレベルアップさせていく習慣トラッキン
 - 最長連続日数
 - 月間達成率
 
-## 🚀 デモ
 
-**GitHub Pagesでデモを公開中:**  
-👉 [https://[your-username].github.io/toeic-habit-tracker-v2/](https://[your-username].github.io/toeic-habit-tracker-v2/)
 
 ## 📱 使い方
 
