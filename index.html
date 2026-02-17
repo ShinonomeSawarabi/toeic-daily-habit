@@ -1003,9 +1003,16 @@
             localStorage.setItem('toeicProgressTracker', JSON.stringify(appData));
         }
 
-        // 今日の日付
+        // 日付をJST(UTC+9)の日付文字列に変換
+        function getJSTDateString(date) {
+            const jstOffset = 9 * 60 * 60 * 1000; // UTC+9
+            const jstDate = new Date(date.getTime() + jstOffset);
+            return jstDate.toISOString().split('T')[0];
+        }
+
+        // 今日の日付(JST)
         function getToday() {
-            return new Date().toISOString().split('T')[0];
+            return getJSTDateString(new Date());
         }
 
         // 現在のレベル情報取得
@@ -1091,7 +1098,7 @@
             let streak = 0;
             let checkDate = new Date();
             while (true) {
-                const dateStr = checkDate.toISOString().split('T')[0];
+                const dateStr = getJSTDateString(checkDate);
                 if (appData.history[dateStr] && appData.history[dateStr].completed) {
                     streak++;
                     checkDate.setDate(checkDate.getDate() - 1);
@@ -1286,7 +1293,7 @@
             let total = 0;
             
             for (let d = new Date(firstDay); d <= lastDay; d.setDate(d.getDate() + 1)) {
-                const dateStr = d.toISOString().split('T')[0];
+                const dateStr = getJSTDateString(d);
                 const day = document.createElement('div');
                 day.className = 'calendar-day';
                 day.textContent = d.getDate();
