@@ -677,6 +677,82 @@
         .char-counter.warning {
             color: #ff6b6b;
         }
+
+        .deru1000-section {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            border-radius: 20px;
+            padding: 20px;
+            margin-bottom: 20px;
+            color: white;
+        }
+
+        .deru1000-header {
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .deru1000-levels {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .deru1000-level-item {
+            background: rgba(255,255,255,0.2);
+            border-radius: 12px;
+            padding: 12px;
+        }
+
+        .deru1000-level-name {
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 4px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .deru1000-progress-bar-outer {
+            width: 100%;
+            height: 8px;
+            background: rgba(255,255,255,0.3);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .deru1000-progress-bar-inner {
+            height: 100%;
+            background: white;
+            border-radius: 4px;
+            transition: width 0.3s ease;
+        }
+
+        .deru1000-action-btn {
+            width: 100%;
+            background: white;
+            color: #4facfe;
+            border: none;
+            padding: 12px;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 700;
+            margin-top: 15px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .deru1000-action-btn:active {
+            transform: scale(0.98);
+        }
+
+        .deru1000-highlight {
+            box-shadow: 0 0 0 3px #4facfe !important;
+            transition: box-shadow 0.3s ease !important;
+        }
     </style>
 </head>
 <body>
@@ -711,6 +787,18 @@
                     <span>獲得した王冠</span>
                 </div>
                 <div class="crown-display" id="crownDisplay"></div>
+            </div>
+
+            <!-- でる1000トラッカーセクション -->
+            <div class="deru1000-section" id="deru1000Section" style="display: none;">
+                <div class="deru1000-header">
+                    <span>📖</span>
+                    <span>でる1000 トラッカー</span>
+                </div>
+                <div class="deru1000-levels" id="deru1000Levels"></div>
+                <button class="deru1000-action-btn" onclick="goToDeru1000Levels()">
+                    📈 でる1000の詳細を見る
+                </button>
             </div>
 
             <div class="current-task">
@@ -1139,8 +1227,90 @@
             updateCalendar();
             updateStatsDisplay();
             updateAchievements();
+            updateDeru1000Section();
             updateLevelList();
             updateSettingsList();
+        }
+
+        // でる1000対象レベルを取得（タイトルに「でる1000」を含むもの）
+        function getDeru1000Levels() {
+            return appData.levels.filter(l => l.title.includes('でる1000'));
+        }
+
+        // でる1000セクション更新
+        function updateDeru1000Section() {
+            const deru1000Levels = getDeru1000Levels();
+            const section = document.getElementById('deru1000Section');
+            const container = document.getElementById('deru1000Levels');
+
+            if (deru1000Levels.length === 0) {
+                section.style.display = 'none';
+                return;
+            }
+
+            section.style.display = 'block';
+            container.innerHTML = '';
+
+            deru1000Levels.forEach(level => {
+                const progress = getLevelProgress(level.id);
+                const completed = isLevelCompleted(level.id);
+                const percent = Math.min(Math.floor((progress / level.requiredDays) * 100), 100);
+
+                let statusText;
+                if (completed) {
+                    statusText = '👑 完了';
+                } else if (level.id === appData.currentLevel) {
+                    statusText = '▶ 進行中';
+                } else if (level.id < appData.currentLevel) {
+                    statusText = '✓ 完了';
+                } else {
+                    statusText = '🔒 ロック';
+                }
+
+                const item = document.createElement('div');
+                item.className = 'deru1000-level-item';
+                item.innerHTML = `
+                    <div class="deru1000-level-name">
+                        <span>${level.name}: ${level.title}</span>
+                        <span style="font-size: 12px;">${statusText}</span>
+                    </div>
+                    <div style="font-size: 12px; margin-bottom: 6px; opacity: 0.9;">${progress}/${level.requiredDays}日完了</div>
+                    <div class="deru1000-progress-bar-outer">
+                        <div class="deru1000-progress-bar-inner" style="width: ${percent}%"></div>
+                    </div>
+                `;
+                container.appendChild(item);
+            });
+        }
+
+        // でる1000レベルへジャンプ
+        function goToDeru1000Levels() {
+            // レベルビューに切り替え
+            document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+
+            document.getElementById('levelsView').classList.add('active');
+            const navItems = document.querySelectorAll('.nav-item');
+            if (navItems[1]) navItems[1].classList.add('active');
+
+            // でる1000レベルまでスクロール＆ハイライト
+            setTimeout(() => {
+                const deru1000Levels = getDeru1000Levels();
+                if (deru1000Levels.length === 0) return;
+
+                const levelItems = document.querySelectorAll('#levelList .level-item');
+                appData.levels.forEach((level, index) => {
+                    if (level.title.includes('でる1000') && levelItems[index]) {
+                        if (index === 0 || !appData.levels[index - 1].title.includes('でる1000')) {
+                            levelItems[index].scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        }
+                        levelItems[index].classList.add('deru1000-highlight');
+                        setTimeout(() => {
+                            levelItems[index].classList.remove('deru1000-highlight');
+                        }, 2000);
+                    }
+                });
+            }, 100);
         }
 
         // ヘッダー更新
