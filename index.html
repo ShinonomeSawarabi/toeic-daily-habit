@@ -796,8 +796,8 @@
                     <span>でる1000 トラッカー</span>
                 </div>
                 <div class="deru1000-levels" id="deru1000Levels"></div>
-                <button class="deru1000-action-btn" onclick="goToDeru1000Levels()">
-                    📈 でる1000の詳細を見る
+                <button class="deru1000-action-btn" onclick="openDeru1000Tracker()">
+                    📖 でる1000トラッカーを開く
                 </button>
             </div>
 
@@ -1283,34 +1283,10 @@
             });
         }
 
-        // でる1000レベルへジャンプ
-        function goToDeru1000Levels() {
-            // レベルビューに切り替え
-            document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
-            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-
-            document.getElementById('levelsView').classList.add('active');
-            const navItems = document.querySelectorAll('.nav-item');
-            if (navItems[1]) navItems[1].classList.add('active');
-
-            // でる1000レベルまでスクロール＆ハイライト
-            setTimeout(() => {
-                const deru1000Levels = getDeru1000Levels();
-                if (deru1000Levels.length === 0) return;
-
-                const levelItems = document.querySelectorAll('#levelList .level-item');
-                appData.levels.forEach((level, index) => {
-                    if (level.title.includes('でる1000') && levelItems[index]) {
-                        if (index === 0 || !appData.levels[index - 1].title.includes('でる1000')) {
-                            levelItems[index].scrollIntoView({ behavior: 'smooth', block: 'center' });
-                        }
-                        levelItems[index].classList.add('deru1000-highlight');
-                        setTimeout(() => {
-                            levelItems[index].classList.remove('deru1000-highlight');
-                        }, 2000);
-                    }
-                });
-            }, 100);
+        // でる1000トラッカーを外部リポジトリで開く
+        function openDeru1000Tracker() {
+            const trackerUrl = 'https://ShinonomeSawarabi.github.io/deru1000-tracker/';
+            window.open(trackerUrl, '_blank');
         }
 
         // ヘッダー更新
