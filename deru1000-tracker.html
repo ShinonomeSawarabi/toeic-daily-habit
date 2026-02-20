@@ -1,0 +1,634 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>でる1000 トラッカー</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            padding: 20px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 420px;
+            background: white;
+            border-radius: 24px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.25);
+            overflow: hidden;
+            margin: auto;
+        }
+
+        /* ヘッダー */
+        .header {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            padding: 24px 20px 20px;
+        }
+
+        .header-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .header-title {
+            font-size: 22px;
+            font-weight: 800;
+        }
+
+        .header-subtitle {
+            font-size: 13px;
+            opacity: 0.9;
+        }
+
+        .back-link {
+            color: rgba(255,255,255,0.85);
+            font-size: 13px;
+            text-decoration: none;
+            background: rgba(255,255,255,0.2);
+            padding: 6px 12px;
+            border-radius: 16px;
+            white-space: nowrap;
+        }
+
+        .back-link:hover { background: rgba(255,255,255,0.3); }
+
+        .overall-progress {
+            background: rgba(255,255,255,0.2);
+            border-radius: 14px;
+            padding: 14px;
+        }
+
+        .progress-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .progress-bar-outer {
+            width: 100%;
+            height: 12px;
+            background: rgba(255,255,255,0.3);
+            border-radius: 6px;
+            overflow: hidden;
+        }
+
+        .progress-bar-inner {
+            height: 100%;
+            background: white;
+            border-radius: 6px;
+            transition: width 0.4s ease;
+        }
+
+        /* コンテンツ */
+        .content {
+            padding: 20px;
+        }
+
+        /* 今日のカード */
+        .today-card {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            border-radius: 18px;
+            padding: 20px;
+            color: white;
+            margin-bottom: 20px;
+        }
+
+        .today-label {
+            font-size: 13px;
+            font-weight: 600;
+            opacity: 0.9;
+            margin-bottom: 6px;
+        }
+
+        .today-day {
+            font-size: 28px;
+            font-weight: 800;
+            margin-bottom: 4px;
+        }
+
+        .today-questions {
+            font-size: 14px;
+            opacity: 0.9;
+            margin-bottom: 16px;
+        }
+
+        .complete-btn {
+            width: 100%;
+            border: none;
+            padding: 14px;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s;
+            background: white;
+            color: #f5576c;
+        }
+
+        .complete-btn.done {
+            background: rgba(255,255,255,0.3);
+            color: white;
+        }
+
+        .complete-btn:active { transform: scale(0.98); }
+
+        /* ストリーク */
+        .stats-row {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .stat-card {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 14px 10px;
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 26px;
+            font-weight: 800;
+            color: #4facfe;
+            display: block;
+        }
+
+        .stat-label {
+            font-size: 11px;
+            color: #666;
+            margin-top: 3px;
+        }
+
+        /* 20日グリッド */
+        .section-title {
+            font-size: 16px;
+            font-weight: 700;
+            color: #333;
+            margin-bottom: 12px;
+        }
+
+        .days-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 8px;
+            margin-bottom: 20px;
+        }
+
+        .day-cell {
+            aspect-ratio: 1;
+            border-radius: 10px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-size: 13px;
+            font-weight: 700;
+            background: #f0f0f0;
+            color: #bbb;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: 2px solid transparent;
+            user-select: none;
+        }
+
+        .day-cell .day-num { font-size: 16px; }
+        .day-cell .day-q { font-size: 9px; font-weight: 500; margin-top: 1px; }
+
+        .day-cell.done {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+        }
+
+        .day-cell.today-cell {
+            border-color: #4facfe;
+            color: #333;
+            background: #e8f4ff;
+        }
+
+        .day-cell.today-cell.done {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            border-color: transparent;
+        }
+
+        .day-cell.future {
+            opacity: 0.4;
+            cursor: default;
+        }
+
+        /* 設定セクション */
+        .settings-section {
+            background: #f8f9fa;
+            border-radius: 14px;
+            padding: 16px;
+            margin-bottom: 20px;
+        }
+
+        .settings-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .settings-row:last-child { margin-bottom: 0; }
+
+        .settings-label {
+            font-size: 13px;
+            color: #555;
+            font-weight: 600;
+        }
+
+        .settings-input {
+            width: 80px;
+            padding: 6px 10px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+            text-align: center;
+        }
+
+        .settings-input:focus {
+            outline: none;
+            border-color: #4facfe;
+        }
+
+        /* リセットボタン */
+        .reset-btn {
+            width: 100%;
+            background: #fff0f0;
+            color: #ff6b6b;
+            border: 2px solid #ff6b6b;
+            padding: 12px;
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-bottom: 20px;
+        }
+
+        .reset-btn:active { background: #ffe0e0; }
+
+        /* お祝い */
+        .celebration {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0);
+            background: rgba(0,0,0,0.88);
+            color: white;
+            padding: 36px 40px;
+            border-radius: 20px;
+            font-size: 22px;
+            font-weight: bold;
+            text-align: center;
+            transition: transform 0.3s ease;
+            pointer-events: none;
+            z-index: 2000;
+            max-width: 290px;
+            line-height: 1.5;
+        }
+
+        .celebration.show { transform: translate(-50%, -50%) scale(1); }
+
+        /* 完了バナー */
+        .complete-banner {
+            background: linear-gradient(135deg, #ffd700 0%, #ff8c00 100%);
+            border-radius: 16px;
+            padding: 20px;
+            text-align: center;
+            color: white;
+            margin-bottom: 20px;
+        }
+
+        .complete-banner-icon { font-size: 40px; margin-bottom: 8px; }
+        .complete-banner-title { font-size: 20px; font-weight: 800; margin-bottom: 4px; }
+        .complete-banner-sub { font-size: 13px; opacity: 0.9; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="header-top">
+                <div>
+                    <div class="header-title">📖 でる1000</div>
+                    <div class="header-subtitle">毎日コツコツ進めよう</div>
+                </div>
+                <a class="back-link" href="index.html">← メインへ</a>
+            </div>
+            <div class="overall-progress">
+                <div class="progress-row">
+                    <span>全体進捗: <span id="totalDoneSpan">0</span>/<span id="totalDaysSpan">20</span>日</span>
+                    <span><span id="percentSpan">0</span>%</span>
+                </div>
+                <div class="progress-bar-outer">
+                    <div class="progress-bar-inner" id="overallBar" style="width:0%"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="content">
+            <!-- 完了バナー（全日完了時） -->
+            <div class="complete-banner" id="completeBanner" style="display:none;">
+                <div class="complete-banner-icon">🏆</div>
+                <div class="complete-banner-title">でる1000 完走！</div>
+                <div class="complete-banner-sub">おめでとうございます！全問制覇達成！</div>
+            </div>
+
+            <!-- 今日のカード -->
+            <div class="today-card" id="todayCard">
+                <div class="today-label">今日の目標</div>
+                <div class="today-day" id="todayDayText">Day 1</div>
+                <div class="today-questions" id="todayQuestionsText">50問 解く</div>
+                <button class="complete-btn" id="completeBtn" onclick="toggleToday()">
+                    ✓ 今日の分を完了
+                </button>
+            </div>
+
+            <!-- 統計 -->
+            <div class="stats-row">
+                <div class="stat-card">
+                    <span class="stat-number" id="doneDays">0</span>
+                    <span class="stat-label">完了日数</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-number" id="streakDays">0</span>
+                    <span class="stat-label">連続日数</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-number" id="totalQuestions">0</span>
+                    <span class="stat-label">解いた問題数</span>
+                </div>
+            </div>
+
+            <!-- 20日グリッド -->
+            <div class="section-title">📅 進捗カレンダー</div>
+            <div class="days-grid" id="daysGrid"></div>
+
+            <!-- 設定 -->
+            <div class="section-title">⚙️ 設定</div>
+            <div class="settings-section">
+                <div class="settings-row">
+                    <span class="settings-label">1日あたりの問題数</span>
+                    <input type="number" class="settings-input" id="qPerDayInput" value="50" min="1" max="1000" onchange="saveSettings()">
+                </div>
+                <div class="settings-row">
+                    <span class="settings-label">総日数</span>
+                    <input type="number" class="settings-input" id="totalDaysInput" value="20" min="1" max="365" onchange="saveSettings()">
+                </div>
+                <div class="settings-row">
+                    <span class="settings-label">開始日</span>
+                    <input type="date" class="settings-input" id="startDateInput" style="width:140px;" onchange="saveSettings()">
+                </div>
+            </div>
+
+            <!-- リセット -->
+            <button class="reset-btn" onclick="confirmReset()">🗑️ 進捗をリセット</button>
+        </div>
+    </div>
+
+    <div class="celebration" id="celebration"></div>
+
+    <script>
+        const STORAGE_KEY = 'deru1000Tracker';
+
+        let data = {
+            completedDays: {},   // "day_1": true など
+            settings: {
+                qPerDay: 50,
+                totalDays: 20,
+                startDate: getTodayStr()
+            }
+        };
+
+        // ---- ユーティリティ ----
+
+        function getTodayStr() {
+            const now = new Date();
+            const jst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+            return jst.toISOString().split('T')[0];
+        }
+
+        function addDays(dateStr, n) {
+            const d = new Date(dateStr + 'T00:00:00');
+            d.setDate(d.getDate() + n);
+            return d.toISOString().split('T')[0];
+        }
+
+        function dayIndex() {
+            // 今日が何日目か (1-based)。開始日前なら 0、終了後なら totalDays+1
+            const today = getTodayStr();
+            const start = data.settings.startDate;
+            const startDate = new Date(start + 'T00:00:00');
+            const todayDate = new Date(today + 'T00:00:00');
+            const diff = Math.floor((todayDate - startDate) / (1000 * 60 * 60 * 24));
+            return diff + 1; // 1-based
+        }
+
+        // ---- データ ----
+
+        function load() {
+            const saved = localStorage.getItem(STORAGE_KEY);
+            if (saved) {
+                data = JSON.parse(saved);
+                if (!data.settings) data.settings = { qPerDay: 50, totalDays: 20, startDate: getTodayStr() };
+                if (!data.completedDays) data.completedDays = {};
+            } else {
+                data.settings.startDate = getTodayStr();
+            }
+        }
+
+        function save() {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+        }
+
+        // ---- 操作 ----
+
+        function toggleToday() {
+            const idx = dayIndex();
+            if (idx < 1 || idx > data.settings.totalDays) return;
+            const key = 'day_' + idx;
+            if (data.completedDays[key]) {
+                delete data.completedDays[key];
+            } else {
+                data.completedDays[key] = getTodayStr();
+                const done = Object.keys(data.completedDays).length;
+                if (done === data.settings.totalDays) {
+                    showCelebration('🏆 でる1000 完走！\n全' + data.settings.totalDays + '日達成！\nおめでとうございます！');
+                } else {
+                    const remaining = data.settings.totalDays - done;
+                    showCelebration('✓ 完了！\nあと' + remaining + '日！');
+                }
+            }
+            save();
+            render();
+        }
+
+        function confirmReset() {
+            if (confirm('進捗データをすべてリセットしますか？\nこの操作は取り消せません。')) {
+                data.completedDays = {};
+                save();
+                render();
+                showCelebration('🔄 リセット完了');
+            }
+        }
+
+        function saveSettings() {
+            const qPerDay = parseInt(document.getElementById('qPerDayInput').value) || 50;
+            const totalDays = parseInt(document.getElementById('totalDaysInput').value) || 20;
+            const startDate = document.getElementById('startDateInput').value || getTodayStr();
+            data.settings = { qPerDay, totalDays, startDate };
+            save();
+            render();
+        }
+
+        // ---- レンダリング ----
+
+        function render() {
+            const { qPerDay, totalDays, startDate } = data.settings;
+            const today = getTodayStr();
+            const idx = dayIndex();
+            const doneDays = Object.keys(data.completedDays).length;
+            const totalQ = doneDays * qPerDay;
+            const percent = Math.floor((doneDays / totalDays) * 100);
+            const isAllDone = doneDays >= totalDays;
+
+            // ヘッダー
+            document.getElementById('totalDoneSpan').textContent = doneDays;
+            document.getElementById('totalDaysSpan').textContent = totalDays;
+            document.getElementById('percentSpan').textContent = percent;
+            document.getElementById('overallBar').style.width = percent + '%';
+
+            // 完了バナー
+            document.getElementById('completeBanner').style.display = isAllDone ? 'block' : 'none';
+            document.getElementById('todayCard').style.display = isAllDone ? 'none' : 'block';
+
+            // 今日のカード
+            if (!isAllDone) {
+                const isTodayDone = !!data.completedDays['day_' + idx];
+                const isBeforeStart = idx < 1;
+                const isAfterEnd = idx > totalDays;
+
+                if (isBeforeStart) {
+                    document.getElementById('todayDayText').textContent = '開始前';
+                    document.getElementById('todayQuestionsText').textContent = '開始日: ' + startDate;
+                    document.getElementById('completeBtn').textContent = '⏳ 開始前';
+                    document.getElementById('completeBtn').disabled = true;
+                } else if (isAfterEnd) {
+                    document.getElementById('todayDayText').textContent = '期間終了';
+                    document.getElementById('todayQuestionsText').textContent = doneDays + '/' + totalDays + '日完了';
+                    document.getElementById('completeBtn').textContent = '📅 期間終了';
+                    document.getElementById('completeBtn').disabled = true;
+                } else {
+                    document.getElementById('todayDayText').textContent = 'Day ' + idx;
+                    document.getElementById('todayQuestionsText').textContent = qPerDay + '問 解く';
+                    document.getElementById('completeBtn').disabled = false;
+                    if (isTodayDone) {
+                        document.getElementById('completeBtn').textContent = '✓ 完了済み（取り消すには再度タップ）';
+                        document.getElementById('completeBtn').className = 'complete-btn done';
+                    } else {
+                        document.getElementById('completeBtn').textContent = '✓ 今日の' + qPerDay + '問を完了';
+                        document.getElementById('completeBtn').className = 'complete-btn';
+                    }
+                }
+            }
+
+            // 統計
+            document.getElementById('doneDays').textContent = doneDays;
+            document.getElementById('totalQuestions').textContent = totalQ;
+            document.getElementById('streakDays').textContent = calcStreak();
+
+            // グリッド
+            renderGrid(totalDays, startDate, today, idx);
+
+            // 設定フォーム
+            document.getElementById('qPerDayInput').value = qPerDay;
+            document.getElementById('totalDaysInput').value = totalDays;
+            document.getElementById('startDateInput').value = startDate;
+        }
+
+        function calcStreak() {
+            const idx = dayIndex();
+            let streak = 0;
+            for (let i = Math.min(idx, data.settings.totalDays); i >= 1; i--) {
+                if (data.completedDays['day_' + i]) {
+                    streak++;
+                } else {
+                    break;
+                }
+            }
+            return streak;
+        }
+
+        function renderGrid(totalDays, startDate, today, currentIdx) {
+            const grid = document.getElementById('daysGrid');
+            grid.innerHTML = '';
+
+            for (let i = 1; i <= totalDays; i++) {
+                const dateStr = addDays(startDate, i - 1);
+                const isDone = !!data.completedDays['day_' + i];
+                const isToday = i === currentIdx;
+                const isFuture = i > currentIdx;
+
+                const cell = document.createElement('div');
+                cell.className = 'day-cell';
+                if (isDone) cell.classList.add('done');
+                if (isToday && !isDone) cell.classList.add('today-cell');
+                if (isToday && isDone) { cell.classList.add('done'); }
+                if (isFuture) cell.classList.add('future');
+
+                const [, month, day] = dateStr.split('-');
+                cell.innerHTML = `<span class="day-num">${parseInt(day)}</span><span class="day-q">${parseInt(month)}/${parseInt(day)}</span>`;
+
+                if (!isFuture) {
+                    cell.onclick = () => toggleDay(i);
+                }
+
+                grid.appendChild(cell);
+            }
+        }
+
+        function toggleDay(i) {
+            const key = 'day_' + i;
+            if (data.completedDays[key]) {
+                delete data.completedDays[key];
+            } else {
+                data.completedDays[key] = getTodayStr();
+                const done = Object.keys(data.completedDays).length;
+                if (done === data.settings.totalDays) {
+                    showCelebration('🏆 でる1000 完走！\n全' + data.settings.totalDays + '日達成！\nおめでとうございます！');
+                }
+            }
+            save();
+            render();
+        }
+
+        function showCelebration(msg) {
+            const el = document.getElementById('celebration');
+            el.innerHTML = msg.replace(/\n/g, '<br>');
+            el.classList.add('show');
+            setTimeout(() => el.classList.remove('show'), 2500);
+        }
+
+        // ---- 起動 ----
+        load();
+        render();
+    </script>
+</body>
+</html>
