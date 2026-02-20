@@ -753,6 +753,69 @@
             box-shadow: 0 0 0 3px #4facfe !important;
             transition: box-shadow 0.3s ease !important;
         }
+
+        .deru1000-tracker-stats {
+            background: rgba(255,255,255,0.15);
+            border-radius: 10px;
+            padding: 12px;
+            margin-top: 12px;
+        }
+
+        .deru1000-tracker-stats-title {
+            font-size: 13px;
+            font-weight: 700;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .deru1000-tracker-stats-row {
+            display: flex;
+            justify-content: space-between;
+            font-size: 12px;
+            margin-bottom: 4px;
+            opacity: 0.9;
+        }
+
+        .deru1000-sections-bar {
+            width: 100%;
+            height: 6px;
+            background: rgba(255,255,255,0.3);
+            border-radius: 3px;
+            overflow: hidden;
+            margin-top: 6px;
+        }
+
+        .deru1000-sections-bar-inner {
+            height: 100%;
+            background: white;
+            border-radius: 3px;
+            transition: width 0.3s ease;
+        }
+
+        .deru1000-tracker-link {
+            display: block;
+            width: 100%;
+            background: rgba(255,255,255,0.9);
+            color: #4facfe;
+            border: none;
+            padding: 12px;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 700;
+            margin-top: 10px;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-decoration: none;
+            text-align: center;
+            box-sizing: border-box;
+        }
+
+        .deru1000-tracker-link:active {
+            transform: scale(0.98);
+            background: rgba(255,255,255,0.75);
+        }
     </style>
 </head>
 <body>
@@ -799,6 +862,9 @@
                 <button class="deru1000-action-btn" onclick="goToDeru1000Levels()">
                     📈 でる1000の詳細を見る
                 </button>
+                <a class="deru1000-tracker-link" href="https://shinonomesawarabi.github.io/deru1000-tracker/" target="_blank">
+                    🔗 でる1000トラッカーを開く
+                </a>
             </div>
 
             <div class="current-task">
@@ -1237,6 +1303,17 @@
             return appData.levels.filter(l => l.title.includes('でる1000'));
         }
 
+        // deru1000-trackerのlocalStorageデータを取得
+        function getDeru1000TrackerData() {
+            const saved = localStorage.getItem('deru1000_v4');
+            if (!saved) return null;
+            try {
+                return JSON.parse(saved);
+            } catch(e) {
+                return null;
+            }
+        }
+
         // でる1000セクション更新
         function updateDeru1000Section() {
             const deru1000Levels = getDeru1000Levels();
@@ -1281,6 +1358,46 @@
                 `;
                 container.appendChild(item);
             });
+
+            // deru1000-trackerの連携データを表示
+            const trackerData = getDeru1000TrackerData();
+            if (trackerData) {
+                const currentCool = trackerData.currentCool || 1;
+                const records = trackerData.records || {};
+                let completedCount = 0;
+                let totalErrors = 0;
+                let errorCount = 0;
+
+                for (let s = 1; s <= 15; s++) {
+                    const key = `c${currentCool}_s${s}`;
+                    if (records[key] && records[key].date) {
+                        completedCount++;
+                        const errors = parseInt(records[key].errors);
+                        if (!isNaN(errors)) {
+                            totalErrors += errors;
+                            errorCount++;
+                        }
+                    }
+                }
+
+                const avgErrors = errorCount > 0 ? (totalErrors / errorCount).toFixed(1) : '-';
+                const sectionsPercent = Math.floor((completedCount / 15) * 100);
+
+                const statsDiv = document.createElement('div');
+                statsDiv.className = 'deru1000-tracker-stats';
+                statsDiv.innerHTML = `
+                    <div class="deru1000-tracker-stats-title">📊 トラッカー連携</div>
+                    <div class="deru1000-tracker-stats-row">
+                        <span>Cool ${currentCool}</span>
+                        <span>${completedCount}/15セクション完了</span>
+                    </div>
+                    <div class="deru1000-sections-bar">
+                        <div class="deru1000-sections-bar-inner" style="width: ${sectionsPercent}%"></div>
+                    </div>
+                    ${errorCount > 0 ? `<div class="deru1000-tracker-stats-row" style="margin-top: 6px;"><span>平均ミス数</span><span>${avgErrors}問</span></div>` : ''}
+                `;
+                container.appendChild(statsDiv);
+            }
         }
 
         // でる1000レベルへジャンプ
