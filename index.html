@@ -1237,13 +1237,25 @@
             return appData.levels.filter(l => l.title.includes('でる1000'));
         }
 
+        // でる1000トラッカーのlocalStorageデータを読み込む（同一オリジンで共有）
+        function getDeru1000TrackerData() {
+            try {
+                const saved = localStorage.getItem('deru1000_v4');
+                if (!saved) return null;
+                return JSON.parse(saved);
+            } catch (e) {
+                return null;
+            }
+        }
+
         // でる1000セクション更新
         function updateDeru1000Section() {
             const deru1000Levels = getDeru1000Levels();
+            const trackerData = getDeru1000TrackerData();
             const section = document.getElementById('deru1000Section');
             const container = document.getElementById('deru1000Levels');
 
-            if (deru1000Levels.length === 0) {
+            if (deru1000Levels.length === 0 && !trackerData) {
                 section.style.display = 'none';
                 return;
             }
@@ -1251,6 +1263,57 @@
             section.style.display = 'block';
             container.innerHTML = '';
 
+            // でる1000トラッカーの実データを表示
+            if (trackerData) {
+                const TOTAL_SECTIONS = 15;
+                const currentCool = trackerData.currentCool || 1;
+                const records = trackerData.records || {};
+                const cools = trackerData.cools || [1];
+
+                // 現在クールの完了セクション数
+                let currentCoolCompleted = 0;
+                for (let s = 1; s <= TOTAL_SECTIONS; s++) {
+                    if (records[`c${currentCool}_s${s}`]) currentCoolCompleted++;
+                }
+
+                // 全クール累計完了セクション数
+                let totalCompleted = 0;
+                cools.forEach(coolId => {
+                    for (let s = 1; s <= TOTAL_SECTIONS; s++) {
+                        if (records[`c${coolId}_s${s}`]) totalCompleted++;
+                    }
+                });
+
+                const currentPercent = Math.floor((currentCoolCompleted / TOTAL_SECTIONS) * 100);
+                const isCoolDone = currentCoolCompleted >= TOTAL_SECTIONS;
+
+                const trackerItem = document.createElement('div');
+                trackerItem.className = 'deru1000-level-item';
+                trackerItem.innerHTML = `
+                    <div class="deru1000-level-name">
+                        <span>クール${currentCool}（全${cools.length}クール）</span>
+                        <span style="font-size: 12px;">${isCoolDone ? '👑 完了' : '▶ 練習中'}</span>
+                    </div>
+                    <div style="font-size: 12px; margin-bottom: 6px; opacity: 0.9;">
+                        クール${currentCool}: ${currentCoolCompleted}/${TOTAL_SECTIONS}セクション　累計: ${totalCompleted}セクション
+                    </div>
+                    <div class="deru1000-progress-bar-outer">
+                        <div class="deru1000-progress-bar-inner" style="width: ${currentPercent}%"></div>
+                    </div>
+                `;
+                container.appendChild(trackerItem);
+            } else {
+                const noDataItem = document.createElement('div');
+                noDataItem.className = 'deru1000-level-item';
+                noDataItem.innerHTML = `
+                    <div style="font-size: 13px; opacity: 0.9; text-align: center; line-height: 1.6;">
+                        でる1000トラッカーを開いて<br>記録を始めるとここに進捗が表示されます
+                    </div>
+                `;
+                container.appendChild(noDataItem);
+            }
+
+            // 習慣トラッカー側のでる1000レベルも表示
             deru1000Levels.forEach(level => {
                 const progress = getLevelProgress(level.id);
                 const completed = isLevelCompleted(level.id);
@@ -1283,7 +1346,7 @@
             });
         }
 
-        // でる1000トラッカーを外部リポジトリで開く
+        // でる1000トラッカーを開く
         function openDeru1000Tracker() {
             const trackerUrl = 'https://ShinonomeSawarabi.github.io/deru1000-tracker/';
             window.open(trackerUrl, '_blank');
@@ -1741,6 +1804,13 @@
                 celebration.classList.remove('show');
             }, 2500);
         }
+
+        // でる1000トラッカーから戻ったとき自動更新
+        document.addEventListener('visibilitychange', function() {
+            if (!document.hidden) {
+                updateDeru1000Section();
+            }
+        });
 
         // ページ読み込み時
         window.onload = init;
